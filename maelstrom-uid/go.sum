@@ -1,0 +1,4 @@
+github.com/google/uuid v1.3.0 h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=
+github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+github.com/jepsen-io/maelstrom/demo/go v0.0.0-20230516124010-52951329816e h1:FRtVXSX5i9RcyMUNsIwjeLaAxRgZGoWLZ/0y9ZQWjOI=
+github.com/jepsen-io/maelstrom/demo/go v0.0.0-20230516124010-52951329816e/go.mod h1:i6aVIs5AIOOaQF1lAisBm7DDeWM1Iopf+26UxjagsCU=
