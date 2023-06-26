@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"math/rand"
@@ -88,10 +89,41 @@ func abort(n *maelstrom.Node, msg maelstrom.Message) error {
 	})
 }
 
+const LAST_TS = "last_ts"
+
+func getTs(kv *maelstrom.KV) int {
+	var ret int
+	var err error
+	for {
+		ret, err = kv.ReadInt(context.Background(), LAST_TS)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if err := kv.CompareAndSwap(context.Background(), LAST_TS, ret, ret+1, false); err != nil {
+			e := err.(*maelstrom.RPCError)
+			if e.Code == maelstrom.PreconditionFailed {
+				continue
+			}
+
+			log.Fatal(err)
+		}
+
+		break
+	}
+
+	return ret
+}
+
 func main() {
 	storage[0] = map[int]int{}
 	rand.Seed(time.Now().UnixMilli())
 	n := maelstrom.NewNode()
+	kv := maelstrom.NewLinKV(n)
+
+	n.Handle("init", func(msg maelstrom.Message) error {
+		return kv.Write(context.Background(), LAST_TS, 1)
+	})
 
 	n.Handle("txn", func(msg maelstrom.Message) error {
 		body := map[string]any{}
@@ -101,9 +133,11 @@ func main() {
 
 		id := int(body["msg_id"].(float64))
 		ops := body["txn"].([]any)
+
+		ts := getTs(kv)
 		if err := processTxn(Txn{
 			ops: ops,
-			ts:  id,
+			ts:  ts,
 		}); err != nil {
 			if err.Error() == "abort" {
 				return abort(n, msg)
